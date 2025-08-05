@@ -19,36 +19,45 @@
 //   console.log(`SYSFOLIO server running at http://localhost:${PORT}`);
 // });
 
-const express = require("express");
+const express = require('express');
+const path = require('path');
+const db = require('./server/db'); // Make sure db.js exports connection
 const app = express();
-const db = require("./server/db");
-const path = require("path");
 
-app.use(express.static("public"));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Buy route
-app.post("/buy", (req, res) => {
-  console.log("Received data:", req.body);
+// Route to insert data
+app.post('/buy', (req, res) => {
   const { company, symbol, sector, price, quantity, date, remarks } = req.body;
 
-  if (!company || !symbol || !sector || !price || !quantity || !date) {
-    return res.json({ success: false, error: "Missing required fields" });
-  }
+  console.log("Data received from frontend:", req.body); // Debug
 
-  const sql =  `INSERT INTO investments (company, symbol, sector, price, quantity, date, remarks)
-             VALUES ('${company}', '${symbol}', '${sector}', '${price}', '${quantity}', '${date}', '${remarks}')`;
+  const sql = `INSERT INTO investments (company, symbol, sector, price, quantity, date, remarks)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(sql, (err, result) => {
+  db.query(sql, [company, symbol, sector, price, quantity, date, remarks], (err, result) => {
     if (err) {
-      console.error(err);
-      return res.json({ success: false, error: err.message });
+      console.error("Insert error:", err);
+      return res.status(500).json({ success: false, error: err.message });
     }
-    res.json({ success: true });
+
+    // Send back the inserted data to render the card
+    return res.json({
+      success: true,
+      data: {
+        company,
+        symbol,
+        sector,
+        price,
+        quantity,
+        date,
+        remarks
+      }
+    });
   });
 });
 
-// Launch server
 app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+  console.log('Server is running on http://localhost:3000');
 });

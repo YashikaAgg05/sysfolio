@@ -56,61 +56,56 @@
 //   });
   
   
-
-document.addEventListener("DOMContentLoaded", () => {
+document.getElementById("buyForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+  
     const companySelect = document.getElementById("company");
     const symbolInput = document.getElementById("symbol");
-    const priceInput = document.getElementById("price");
-  
     const sectorSelect = document.getElementById("sector");
+    const priceInput = document.getElementById("price");
     const quantityInput = document.getElementById("quantity");
     const dateInput = document.getElementById("date");
     const remarksInput = document.getElementById("remarks");
   
-    const stockMap = {
-      AAPL: { price: 174.22 },
-      GOOGL: { price: 140.56 },
-      MSFT: { price: 322.11 },
-      AMZN: { price: 135.67 },
-      TSLA: { price: 272.89 }
+    const data = {
+      company: companySelect.value,
+      symbol: symbolInput.value,
+      sector: sectorSelect.value,
+      price: parseFloat(priceInput.value),
+      quantity: parseInt(quantityInput.value),
+      date: dateInput.value,
+      remarks: remarksInput.value
     };
   
-    companySelect.addEventListener("change", () => {
-      const symbol = companySelect.value;
-      symbolInput.value = symbol;
-      priceInput.value = stockMap[symbol]?.price || "";
+    const res = await fetch("/buy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
     });
   
-    document.getElementById("buyForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    const result = await res.json();
   
-      const data = {
-        company: companySelect.options[companySelect.selectedIndex].text,
-        symbol: symbolInput.value,
-        sector: sectorSelect.value,
-        price: parseFloat(priceInput.value),
-        quantity: parseInt(quantityInput.value),
-        date: dateInput.value,
-        remarks: remarksInput.value
-      };
-  
-      const res = await fetch("/buy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-  
-      const result = await res.json();
-  
-      if (result.success) {
-        alert("Investment saved!");
-      } else {
-        alert("Error saving investment");
-        console.error(result.error);
-      }
-    });
-  
-    // Auto-fill symbol & price on load
-    companySelect.dispatchEvent(new Event("change"));
+    if (result.success) {
+      renderCard(result.data);
+    } else {
+      alert("Error: " + result.error);
+    }
   });
+  
+  function renderCard(data) {
+    const container = document.getElementById("cardContainer");
+    const card = document.createElement("div");
+    card.className = "card mb-3";
+    card.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">${data.company} (${data.symbol})</h5>
+        <p class="card-text">Sector: ${data.sector}</p>
+        <p class="card-text">Price: ₹${data.price}</p>
+        <p class="card-text">Quantity: ${data.quantity}</p>
+        <p class="card-text">Date: ${data.date}</p>
+        <p class="card-text">Remarks: ${data.remarks}</p>
+      </div>
+    `;
+    container.prepend(card);
+  }
   

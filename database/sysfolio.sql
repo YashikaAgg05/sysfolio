@@ -10,15 +10,13 @@ USE sysfolio;
 --   amount_invested DECIMAL(10, 2),
 --   date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 -- );
-
-
-CREATE TABLE IF not EXISTS investments (
+CREATE TABLE investments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   company VARCHAR(100),
-  symbol VARCHAR(10),
+  symbol VARCHAR(20),
   sector VARCHAR(50),
   price DECIMAL(10,2),
   quantity INT,
   date DATE,
-  remarks TEXT
+  remarks VARCHAR(255)
 );
