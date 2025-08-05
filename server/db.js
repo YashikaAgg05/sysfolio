@@ -38,7 +38,7 @@ const mysql = require("mysql");
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "n3u3da!", // <-- use your MySQL root password
+  password: "n3u3da!",
   database: "sysfolio"
 });
 
